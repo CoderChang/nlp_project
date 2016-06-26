@@ -1,3 +1,4 @@
 pdtb-data.json
 pdtb-parses-dev.json
 pdtb-parses.json
+*.pyc
