@@ -21,6 +21,7 @@ TRAIN_DATA_PATH = TRAIN_DIR + 'pdtb-data.json'
 TRAIN_PARSES_PATH = TRAIN_DIR + 'pdtb-parses.json'
 
 TRAIN_FEATURE_CONN_CL = TRAIN_OUT_FEATURE_DIR + 'conn_cl_feature.txt'
+TRAIN_MODEL_CONN_CL = TRAIN_OUT_MODEL_DIR + 'conn_cl.pickle'
 
 
 SORTED_EXP_CONN_PATH = DATA_DIR + 'sortedExpConn.txt'

@@ -1,15 +1,20 @@
 import sys
 import json
+import time
+import nltk
+import pickle
 
 sys.path.append('..')
 import config
 import utils.util as util
 import utils.conn_util as conn_util
-import utils.syntax_tree as Syntax_tree
+from utils.syntax_tree import Syntax_tree
 
-class connective_classifier(object):
+class Connective_classifier(object):
 
     def __init__(self):
+        self.classifier = None
+
         self.cpos_dict = util.load_dict_from_file(config.CONNECTIVE_DICT_CPOS_PATH)
         self.prev_C_dict = util.load_dict_from_file(config.CONNECTIVE_DICT_PREV_C_PATH)
         self.prevPOS_dict = util.load_dict_from_file(config.CONNECTIVE_DICT_PREVPOS_PATH)
@@ -20,12 +25,22 @@ class connective_classifier(object):
         self.CParent_to_root_path_dict = util.load_dict_from_file(config.CONNECTIVE_DICT_CPARENT_TO_ROOT_PATH)
         self.compressed_CParent_to_root_path_dict = util.load_dict_from_file(config.CONNECTIVE_DICT_COMPRESSED_CPARENT_TO_ROOT_PATH)
 
+
     def train_model(self, pdtb_data_file, pdtb_parses_file):
+        print 'opening files ...'
         with open(pdtb_data_file) as f1:
             data_json_list = [json.loads(line) for line in f1.readlines()]
         with open(pdtb_parses_file) as f2:
             all_parse_dicts = json.loads(f2.read())
 
+        #train_num = 1000
+        #print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
+        #data_json_list = data_json_list[:train_num]
+
+        print 'generating train_examples...'
+        print time.strftime('%Y-%m-%d %H:%M:%S')
+        print '------------------------------------------'
+        true_num = false_num = 0
         train_examples = []
         for data_json in data_json_list:
             tmp_DocID = data_json['DocID']
@@ -42,23 +57,58 @@ class connective_classifier(object):
                 doc_conn_indices = conn_indices
                 for ind, sent in enumerate(doc["sentences"]):
                     if sent_index > ind:
-                        doc_conn_indices += len(sent['words'])
+                        doc_conn_indices = [i + len(sent['words']) for i in doc_conn_indices]
                 tmp_feature = self.extract_features(doc, sent_index, conn_indices)
                 if set(doc_conn_indices).issubset(set(true_conn_indices)):
-                    train_examples.append(tmp_feature, True)
+                    train_examples.append((tmp_feature, True))
+                    true_num += 1
                 else:
-                    train_examples.append(tmp_feature, False)
+                    train_examples.append((tmp_feature, False))
+                    false_num += 1
 
+        print 'true_num: ', true_num, ' false_num: ', false_num
+        print 'train_examples generated, train classifier ...'
+        print time.strftime('%Y-%m-%d %H:%M:%S')
+        print '------------------------------------------'
 
-    def write_model_tofile(self, file_path):
-        pass
+        # MaxentClassifier
+        #GIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[0]
+        #self.classifier = nltk.MaxentClassifier.train(train_examples, GIS_algorithm, trace=0, max_iter=1000)
+        # NaiveBayesClassifier
+        self.classifier = nltk.classify.NaiveBayesClassifier.train(train_examples)
+
+        print 'classifier completed ...'
+        print time.strftime('%Y-%m-%d %H:%M:%S')
+        print '------------------------------------------'
+
+    def get_true_conn_list(self, doc, conn_list):
+        true_conn_list = []
+        test_features = []
+        for (sent_index, conn_indices) in conn_list:
+            doc_conn_indices = conn_indices
+            for ind, sent in enumerate(doc["sentences"]):
+                if sent_index > ind:
+                    doc_conn_indices = [i + len(sent['words']) for i in doc_conn_indices]
+            tmp_feature = self.extract_features(doc, sent_index, conn_indices)
+            test_features.append(tmp_feature)
+        result_list = self.classifier.classify_many(test_features)
+        for i in range(len(result_list)):
+            if result_list[i]:
+                true_conn_list.append(conn_list[i])
+        return true_conn_list
+
+    def write_model_to_file(self, file_path):
+        f = open(file_path, 'wb')
+        pickle.dump(self.classifier, f)
+        f.close()
+
+    def load_model_from_file(self, file_path):
+        f = open(file_path, 'rb')
+        self.classifier = pickle.load(f)
+        f.close()
 
     def extract_features(self, doc, sent_index, conn_indices):
         # feat dict
-        # {
-        #     dimension = 1000,
-        #     dict_index = 10/None,
-        # }
         feat_dict_CPOS_dict = {}
         feat_dict_prev_C_dict = {}
         feat_dict_prevPOS_dict = {}
@@ -134,7 +184,7 @@ class connective_classifier(object):
             cparent_to_root_path = ""
             for conn_index in conn_indices:
                 conn_node = syntax_tree.get_leaf_node_by_token_index(conn_index)
-                conn_parent_node = conn_node.up
+                conn_parent_node = conn_node.parent()
                 cparent_to_root_path += syntax_tree.get_node_path_to_root(conn_parent_node) + "&"
             if cparent_to_root_path[-1] == "&":
                 cparent_to_root_path = cparent_to_root_path[:-1]
@@ -146,12 +196,9 @@ class connective_classifier(object):
             compressed_path = ""
             for conn_index in conn_indices:
                 conn_node = syntax_tree.get_leaf_node_by_token_index(conn_index)
-                conn_parent_node = conn_node.up
-
+                conn_parent_node = conn_node.parent()
                 path = syntax_tree.get_node_path_to_root(conn_parent_node)
-
                 compressed_path += util.get_compressed_path(path) + "&"
-
             if compressed_path[-1] == "&":
                 compressed_path = compressed_path[:-1]
 
@@ -172,3 +219,73 @@ class connective_classifier(object):
         features.append(util.get_feature(feat_dict_compressed_CParent_to_root_path_dict, self.compressed_CParent_to_root_path_dict, compressed_path))
 
         joint_features = util.merge_features(features)
+        #print 'joint_features', joint_features
+        return joint_features
+
+
+    def test_model(self, pdtb_data_file, pdtb_parses_file):
+        print 'opening files ...'
+        with open(pdtb_data_file) as f1:
+            data_json_list = [json.loads(line) for line in f1.readlines()]
+        with open(pdtb_parses_file) as f2:
+            all_parse_dicts = json.loads(f2.read())
+
+        #test_num = 1000
+        #print 'length of data_json_list: ', len(data_json_list), 'test_num: ', test_num
+        #data_json_list = data_json_list[:test_num]
+
+        print 'generating test_examples...'
+        print time.strftime('%Y-%m-%d %H:%M:%S')
+        print '------------------------------------------'
+        true_num = false_num = 0
+        train_examples = []
+        test_examples = []
+        for data_json in data_json_list:
+            tmp_DocID = data_json['DocID']
+            doc = all_parse_dicts[tmp_DocID]
+            conn_list = conn_util.get_doc_conns(doc)
+
+            true_conn_indices = []
+            if data_json['Type'] == 'Explicit':
+                true_conn_indices_begin = data_json['Connective']['TokenList'][0][2]
+                true_conn_length = len(data_json['Connective']['RawText'].split(' '))
+                true_conn_indices = range(true_conn_indices_begin, true_conn_indices_begin + true_conn_length)
+
+            for (sent_index, conn_indices) in conn_list:
+                doc_conn_indices = conn_indices
+                for ind, sent in enumerate(doc["sentences"]):
+                    if sent_index > ind:
+                        doc_conn_indices = [i + len(sent['words']) for i in doc_conn_indices]
+                tmp_feature = self.extract_features(doc, sent_index, conn_indices)
+                test_examples.append(tmp_feature)
+                if set(doc_conn_indices).issubset(set(true_conn_indices)):
+                    train_examples.append((tmp_feature, True))
+                    true_num += 1
+                else:
+                    train_examples.append((tmp_feature, False))
+                    false_num += 1
+
+        print 'true_num: ', true_num, ' false_num: ', false_num
+        print 'test_examples generated, test classifier ...'
+        print time.strftime('%Y-%m-%d %H:%M:%S')
+        print '------------------------------------------'
+
+        result_list = self.classifier.classify_many(test_examples)
+        print 'length of result_list: ', len(result_list)
+        true_predict_num = 0
+        for i in range(len(result_list)):
+            if result_list[i] == train_examples[i][1]:
+                true_predict_num += 1
+        print 'true_predict_num: ', true_predict_num, ' precision: ', float(true_predict_num)/len(result_list)
+
+        print time.strftime('%Y-%m-%d %H:%M:%S')
+        print '------------------------------------------'
+
+if __name__ == '__main__':
+    classifier = Connective_classifier()
+    print 'train ...................................................................'
+    classifier.train_model(config.TRAIN_DATA_PATH, config.TRAIN_PARSES_PATH)
+    classifier.write_model_to_file(config.TRAIN_MODEL_CONN_CL)
+    print 'test on training set ....................................................'
+    classifier.load_model_from_file(config.TRAIN_MODEL_CONN_CL)
+    classifier.test_model(config.TRAIN_DATA_PATH, config.TRAIN_PARSES_PATH)
