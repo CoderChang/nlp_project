@@ -1,6 +1,7 @@
 import json
 import sys
 import utils.conn_util as conn_util
+import model_trainer.connective_classifier.classifier as connective_classifier
 
 class DiscourseParser(object):
 
@@ -21,6 +22,11 @@ class DiscourseParser(object):
         conn_list = conn_util.get_doc_conns(doc)
         #print conn_list
         #raw_input()
+
+        print "==> 1. Connective classifier:"
+
+
+        output = explicit_relations + non_explicit_relations
 
         # sample code
         output = []

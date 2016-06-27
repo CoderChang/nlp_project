@@ -230,3 +230,8 @@ def get_wn_pos(tree_bank_tag):
     else:
         return ''
 
+def get_feature(self, feat_dict, dict, feat):
+    feat_dict.dimension = len(dict)
+    if feat in dict:
+        feat_dict.dict_index = dict[feat]
+    return feat_dict
