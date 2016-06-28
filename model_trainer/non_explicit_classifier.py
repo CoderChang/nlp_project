@@ -64,34 +64,31 @@ class Non_explicit_classifier(object):
         print 'generating train_examples...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
         print '------------------------------------------'
-        PS_num = SS_num = FS_num = 0
+        Sense_statistics, Type_statistics = {}, {}
         train_examples = []
         for data_json in data_json_list:
             tmp_DocID = data_json['DocID']
             doc = all_parse_dicts[tmp_DocID]
 
             if data_json['Type'] != 'Explicit':
-                conn_indices = [token[4] for token in data_json['Connective']['TokenList']]
-                data_conn_offset_begin = data_json['Connective']['CharacterSpanList'][0][0]
-                data_arg1_offset_begin = data_json['Arg1']['CharacterSpanList'][0][0]
-                for ind, sent in enumerate(doc["sentences"]):
-                    sent_offset_begin = sent['words'][0][1]['CharacterOffsetBegin']
-                    sent_offset_end = sent['words'][-1][1]['CharacterOffsetEnd']
-                    if sent_offset_begin <= data_conn_offset_begin <= sent_offset_end:
-                        conn_sentence_index = ind
-                    if sent_offset_begin <= data_arg1_offset_begin <= sent_offset_end:
-                        arg1_sentence_index = ind
-                tmp_feature = self.extract_features(doc, conn_sentence_index, conn_indices)
-                if arg1_sentence_index == conn_sentence_index:
-                    train_examples.append((tmp_feature, 'SS'))
-                    SS_num += 1
-                elif arg1_sentence_index < conn_sentence_index:
-                    train_examples.append((tmp_feature, 'PS'))
-                    PS_num += 1
-                else:
-                    FS_num += 1
+                relation = data_json
+                tmp_feature = self.extract_features(doc, relation)
+                if relation['Sense'] in self.implicit_sense_list:
+                    train_examples.append((tmp_feature, relation['Sense']))
 
-        print 'PS_num: ', PS_num, ' SS_num: ', SS_num, ' FS_num: ', FS_num
+                if relation['Sense'] in Sense_statistics :
+                    Sense_statistics[relation['Sense']] += 1
+                else :
+                    Sense_statistics[relation['Sense']] = 0
+                if relation['Type'] in Type_statistics :
+                    Type_statistics[relation['Sense']] += 1
+                else :
+                    Type_statistics[relation['Sense']] = 0
+
+        for k, v in Sense_statistics :
+            print k + ': ' + str(v)
+        for k, v in Type_statistics :
+            print k + ': ' + str(v)
         print 'train_examples generated, train classifier ...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
         print '------------------------------------------'
@@ -186,30 +183,18 @@ class Non_explicit_classifier(object):
         print 'generating test_examples...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
         print '------------------------------------------'
+
         train_examples = []
         test_examples = []
         for data_json in data_json_list:
             tmp_DocID = data_json['DocID']
             doc = all_parse_dicts[tmp_DocID]
 
-            if data_json['Type'] == 'Explicit':
-                conn_indices = [token[4] for token in data_json['Connective']['TokenList']]
-                data_conn_offset_begin = data_json['Connective']['CharacterSpanList'][0][0]
-                data_arg1_offset_begin = data_json['Arg1']['CharacterSpanList'][0][0]
-                for ind, sent in enumerate(doc["sentences"]):
-                    sent_offset_begin = sent['words'][0][1]['CharacterOffsetBegin']
-                    sent_offset_end = sent['words'][-1][1]['CharacterOffsetEnd']
-                    if sent_offset_begin <= data_conn_offset_begin <= sent_offset_end:
-                        conn_sentence_index = ind
-                    if sent_offset_begin <= data_arg1_offset_begin <= sent_offset_end:
-                        arg1_sentence_index = ind
-                tmp_feature = self.extract_features(doc, conn_sentence_index, conn_indices)
-                if arg1_sentence_index == conn_sentence_index:
-                    train_examples.append((tmp_feature, 'SS'))
-                    test_examples.append(tmp_feature)
-                elif arg1_sentence_index < conn_sentence_index:
-                    train_examples.append((tmp_feature, 'PS'))
-                    test_examples.append(tmp_feature)
+            if data_json['Type'] != 'Explicit':
+                relation = data_json
+                tmp_feature = self.extract_features(doc, relation)
+                train_examples.append((tmp_feature, relation['Sense']))
+                test_examples.append(tmp_feature)
 
         print 'test_examples generated, test classifier ...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -229,9 +214,9 @@ class Non_explicit_classifier(object):
 
 if __name__ == '__main__':
     classifier = Non_explicit_classifier()
-    #print 'train ...................................................................'
-    #classifier.train_model(config.TRAIN_DATA_PATH, config.TRAIN_PARSES_PATH)
-    #classifier.write_model_to_file(config.TRAIN_MODEL_ARG_POS_CL)
+    print 'train ...................................................................'
+    classifier.train_model(config.TRAIN_DATA_PATH, config.TRAIN_PARSES_PATH)
+    classifier.write_model_to_file(config.TRAIN_MODEL_NON_EXPLICIT_CL)
     #print 'test on training set ....................................................'
-    #classifier.load_model_from_file(config.TRAIN_MODEL_ARG_POS_CL)
+    #classifier.load_model_from_file(config.TRAIN_MODEL_NON_EXPLICIT_CL)
     #classifier.test_model(config.TRAIN_DATA_PATH, config.TRAIN_PARSES_PATH)

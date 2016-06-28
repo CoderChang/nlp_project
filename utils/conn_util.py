@@ -118,7 +118,7 @@ def get_Arg_dependency_rules(relation, Arg, doc):
     #2. dependency_rules
     dependency_rules = []
     for sent_index in dict:
-        Arg_indices = [item+1 for item in dict[sent_index]]#dependency 从1开始
+        Arg_indices = [item+1 for item in dict[sent_index]] #dependency start from index 1
         dependency_list = doc["sentences"][sent_index]["dependencies"]
 
         depen_dict = {} # depen_dict["talk"] = ["nsubj", "aux"]
@@ -172,7 +172,7 @@ def get_Arg_production_rules(relation, Arg, doc):
             rule = node.label() + '-->' + ' '.join([child.label() for child in node])
             production_rules.append(rule)
 
-    production_rules = list(set(production))
+    production_rules = list(set(production_rules))
     return production_rules
 
 

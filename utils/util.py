@@ -3,7 +3,7 @@ import sys
 import string
 import json
 import re
-import PorterStemmer
+from PorterStemmer import PorterStemmer
 
 from multiprocessing import Process
 from nltk.stem.wordnet import WordNetLemmatizer

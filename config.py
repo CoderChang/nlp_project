@@ -16,7 +16,7 @@ TEST_OUT_MODEL_OUT_DIR = CWD + 'test_output/model_output/'
 
 DICT_CONN_DIR = DICT_DIR + 'connective/'
 DICT_ARG_POS_DIR = DICT_DIR + 'argument_position/'
-DICT_NON_EXPLICIT_DIR = DICT_PATH + "non_explicit_classifier/"
+DICT_NON_EXPLICIT_DIR = DICT_DIR + "non_explicit_classifier/"
 
 # file paths:
 TRAIN_DATA_PATH = TRAIN_DIR + 'pdtb-data.json'
@@ -26,6 +26,7 @@ TRAIN_FEATURE_CONN_CL = TRAIN_OUT_FEATURE_DIR + 'conn_cl_feature.txt'
 
 TRAIN_MODEL_CONN_CL = TRAIN_OUT_MODEL_DIR + 'conn_cl.pickle'
 TRAIN_MODEL_ARG_POS_CL = TRAIN_OUT_MODEL_DIR + 'arg_pos_cl.pickle'
+TRAIN_MODEL_NON_EXPLICIT_CL = TRAIN_OUT_MODEL_DIR + 'non_exp_cl.pickle'
 
 
 SORTED_EXP_CONN_PATH = DATA_DIR + 'sortedExpConn.txt'
