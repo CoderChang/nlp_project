@@ -26,6 +26,16 @@ class Connective_classifier(object):
         self.compressed_CParent_to_root_path_dict = util.load_dict_from_file(config.CONNECTIVE_DICT_COMPRESSED_CPARENT_TO_ROOT_PATH)
 
 
+    def write_model_to_file(self, file_path):
+        f = open(file_path, 'wb')
+        pickle.dump(self.classifier, f)
+        f.close()
+
+    def load_model_from_file(self, file_path):
+        f = open(file_path, 'rb')
+        self.classifier = pickle.load(f)
+        f.close()
+
     def train_model(self, pdtb_data_file, pdtb_parses_file):
         print 'opening files ...'
         with open(pdtb_data_file) as f1:
@@ -49,9 +59,10 @@ class Connective_classifier(object):
 
             true_conn_indices = []
             if data_json['Type'] == 'Explicit':
-                true_conn_indices_begin = data_json['Connective']['TokenList'][0][2]
-                true_conn_length = len(data_json['Connective']['RawText'].split(' '))
-                true_conn_indices = range(true_conn_indices_begin, true_conn_indices_begin + true_conn_length)
+                true_conn_indices = [token[2] for token in data_json['Connective']['TokenList']]
+                #true_conn_indices_begin = data_json['Connective']['TokenList'][0][2]
+                #true_conn_length = len(data_json['Connective']['RawText'].split(' '))
+                #true_conn_indices = range(true_conn_indices_begin, true_conn_indices_begin + true_conn_length)
 
             for (sent_index, conn_indices) in conn_list:
                 doc_conn_indices = conn_indices
@@ -74,6 +85,8 @@ class Connective_classifier(object):
         # MaxentClassifier
         #GIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[0]
         #self.classifier = nltk.MaxentClassifier.train(train_examples, GIS_algorithm, trace=0, max_iter=1000)
+        #IIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[1]
+        #self.classifier = nltk.MaxentClassifier.train(train_examples, IIS_algorithm, trace=0, max_iter=1000)
         # NaiveBayesClassifier
         self.classifier = nltk.classify.NaiveBayesClassifier.train(train_examples)
 
@@ -81,14 +94,11 @@ class Connective_classifier(object):
         print time.strftime('%Y-%m-%d %H:%M:%S')
         print '------------------------------------------'
 
+    # used for predction
     def get_true_conn_list(self, doc, conn_list):
         true_conn_list = []
         test_features = []
         for (sent_index, conn_indices) in conn_list:
-            doc_conn_indices = conn_indices
-            for ind, sent in enumerate(doc["sentences"]):
-                if sent_index > ind:
-                    doc_conn_indices = [i + len(sent['words']) for i in doc_conn_indices]
             tmp_feature = self.extract_features(doc, sent_index, conn_indices)
             test_features.append(tmp_feature)
         result_list = self.classifier.classify_many(test_features)
@@ -97,16 +107,7 @@ class Connective_classifier(object):
                 true_conn_list.append(conn_list[i])
         return true_conn_list
 
-    def write_model_to_file(self, file_path):
-        f = open(file_path, 'wb')
-        pickle.dump(self.classifier, f)
-        f.close()
-
-    def load_model_from_file(self, file_path):
-        f = open(file_path, 'rb')
-        self.classifier = pickle.load(f)
-        f.close()
-
+    # here, conn_indices are indices within sentence, not within whole doc
     def extract_features(self, doc, sent_index, conn_indices):
         # feat dict
         feat_dict_CPOS_dict = {}
@@ -237,7 +238,6 @@ class Connective_classifier(object):
         print 'generating test_examples...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
         print '------------------------------------------'
-        true_num = false_num = 0
         train_examples = []
         test_examples = []
         for data_json in data_json_list:
@@ -247,9 +247,10 @@ class Connective_classifier(object):
 
             true_conn_indices = []
             if data_json['Type'] == 'Explicit':
-                true_conn_indices_begin = data_json['Connective']['TokenList'][0][2]
-                true_conn_length = len(data_json['Connective']['RawText'].split(' '))
-                true_conn_indices = range(true_conn_indices_begin, true_conn_indices_begin + true_conn_length)
+                true_conn_indices = [token[2] for token in data_json['Connective']['TokenList']]
+                #true_conn_indices_begin = data_json['Connective']['TokenList'][0][2]
+                #true_conn_length = len(data_json['Connective']['RawText'].split(' '))
+                #true_conn_indices = range(true_conn_indices_begin, true_conn_indices_begin + true_conn_length)
 
             for (sent_index, conn_indices) in conn_list:
                 doc_conn_indices = conn_indices
@@ -260,12 +261,9 @@ class Connective_classifier(object):
                 test_examples.append(tmp_feature)
                 if set(doc_conn_indices).issubset(set(true_conn_indices)):
                     train_examples.append((tmp_feature, True))
-                    true_num += 1
                 else:
                     train_examples.append((tmp_feature, False))
-                    false_num += 1
 
-        print 'true_num: ', true_num, ' false_num: ', false_num
         print 'test_examples generated, test classifier ...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
         print '------------------------------------------'

@@ -3,18 +3,6 @@ import sys
 import util
 
 
-def get_doc_conns_indices(doc):
-    doc_conn_indices_list = [] #[doc_conn_indices, .. ]
-    pre_total_indices = 0
-    for sent_index, sentence in enumerate(doc["sentences"]):
-        sent_words_list = [word[0] for word in sentence["words"]]
-        for conn_indices in _check_connectives(sent_words_list): #[[2, 3], [0]]
-            doc_conn_indices = [ind+pre_total_indices for ind in conn_indices]
-            doc_conn_indices_list.append(doc_conn_indices)
-        pre_total_indices += len(sentence['words'])
-    return doc_conn_indices_list
-
-
 def get_doc_conns(doc):
     conn_list = [] #[(sent_index, conn_indices), .. ]
     for sent_index, sentence in enumerate(doc["sentences"]):

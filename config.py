@@ -15,18 +15,21 @@ TEST_OUT_FEATURE_OUT_DIR = CWD + 'test_output/feature_output/'
 TEST_OUT_MODEL_OUT_DIR = CWD + 'test_output/model_output/'
 
 DICT_CONN_DIR = DICT_DIR + 'connective/'
+DICT_ARG_POS_DIR = DICT_DIR + 'argument_position/'
 
 # file paths:
 TRAIN_DATA_PATH = TRAIN_DIR + 'pdtb-data.json'
 TRAIN_PARSES_PATH = TRAIN_DIR + 'pdtb-parses.json'
 
 TRAIN_FEATURE_CONN_CL = TRAIN_OUT_FEATURE_DIR + 'conn_cl_feature.txt'
+
 TRAIN_MODEL_CONN_CL = TRAIN_OUT_MODEL_DIR + 'conn_cl.pickle'
+TRAIN_MODEL_ARG_POS_CL = TRAIN_OUT_MODEL_DIR + 'arg_pos_cl.pickle'
 
 
 SORTED_EXP_CONN_PATH = DATA_DIR + 'sortedExpConn.txt'
 
-''' connnective dict names '''
+''' connnective dict '''
 CONNECTIVE_DICT_CPOS_PATH = DICT_CONN_DIR + "cpos_dict.txt"
 CONNECTIVE_DICT_PREV_C_PATH = DICT_CONN_DIR +"prev_c_dict.txt"
 CONNECTIVE_DICT_PREVPOS_PATH = DICT_CONN_DIR +"prevpos_dict.txt"
@@ -37,4 +40,15 @@ CONNECTIVE_DICT_CPOS_NEXTPOS_PATH = DICT_CONN_DIR + "cpos_nextpos_dict.txt"
 CONNECTIVE_DICT_CPARENT_TO_ROOT_PATH = DICT_CONN_DIR+ "cparent_to_root_path_dict.txt"
 CONNECTIVE_DICT_COMPRESSED_CPARENT_TO_ROOT_PATH = DICT_CONN_DIR+ "compressed_cparent_to_root_path_dict.txt"
 
-
+''' argument position dict '''
+ARG_POSITION_DICT_CSTRING = DICT_ARG_POS_DIR + "ctring_dict.txt"
+ARG_POSITION_DICT_CPOSITION = DICT_ARG_POS_DIR + "cposition_dict.txt"
+ARG_POSITION_DICT_CPOS = DICT_ARG_POS_DIR + "cpos_dict.txt"
+ARG_POSITION_DICT_PREV1 = DICT_ARG_POS_DIR + "prev1_dict.txt"
+ARG_POSITION_DICT_PREV1POS = DICT_ARG_POS_DIR + "prev1pos_dict.txt"
+ARG_POSITION_DICT_PREV1_C = DICT_ARG_POS_DIR + "prev1_C_dict.txt"
+ARG_POSITION_DICT_PREV1POS_CPOS = DICT_ARG_POS_DIR + "prev1pos_Cpos_dict.txt"
+ARG_POSITION_DICT_PREV2 = DICT_ARG_POS_DIR + "prev2_dict.txt"
+ARG_POSITION_DICT_PREV2POS = DICT_ARG_POS_DIR + "prev2pos_dict.txt"
+ARG_POSITION_DICT_PREV2_C = DICT_ARG_POS_DIR + "prev2_C_dict.txt"
+ARG_POSITION_DICT_PREV2POS_CPOS = DICT_ARG_POS_DIR + "prev2pos_Cpos_dict.txt"
