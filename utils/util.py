@@ -6,9 +6,6 @@ import re
 import PorterStemmer
 
 from multiprocessing import Process
-#from feature import Feature
-#from example import Example
-#from random import shuffle
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.corpus import wordnet
 
@@ -27,7 +24,6 @@ def singleton(cls):
 
 def get_sorted_conns_list():
     return load_list_from_file(config.SORTED_EXP_CONN_PATH)
-
 
 
 def getSpanIndecesInSent(span_tokens, sent_tokens):
@@ -52,27 +48,6 @@ def run_multiple_threads(feature_function_list):
         procs.append(p)
     for p in procs: p.start()
     for p in procs: p.join()
-
-# merge all the features in the feature_list
-#def mergeFeatures(feature_list, name = ""):
-#    dimension = 0
-#    feat_string = ""
-#    for feature in feature_list:
-#        if dimension == 0:# first one
-#            feat_string = feature.feat_string
-#        else:
-#            if feature.feat_string != "":
-#                # change the indices of the current feature.
-#                temp = ""
-#                for item in feature.feat_string.split(" "):
-#                    index, value = item.split(":")
-#                    temp += " %d:%s" % (int(index)+dimension, value)
-#                feat_string += temp
-#        dimension += feature.dimension
-#
-#    merged_feature = Feature(name, dimension,{})
-#    merged_feature.feat_string = feat_string.strip()
-#    return merged_feature
 
 # remove the item (value < threshold) from dict
 def removeItemsInDict(dict, threshold = 1):
@@ -108,15 +83,6 @@ def load_dict_from_file(dict_file_path):
         dict[line] = index+1
     dict_file.close()
     return dict
-
-#def write_example_list_to_file(example_list, to_file):
-#    to_file = open(to_file, "w")
-#    to_file.write("\n".join([example.content + " # " + example.comment for example in example_list]))
-#    to_file.close()
-#
-#def write_shuffled_example_list_to_file(example_list, to_file):
-#    shuffle(example_list)
-#    write_example_list_to_file(example_list, to_file)
 
 def get_compressed_path(path):
     list = path.split("-->")

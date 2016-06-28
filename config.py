@@ -16,6 +16,7 @@ TEST_OUT_MODEL_OUT_DIR = CWD + 'test_output/model_output/'
 
 DICT_CONN_DIR = DICT_DIR + 'connective/'
 DICT_ARG_POS_DIR = DICT_DIR + 'argument_position/'
+DICT_NON_EXPLICIT_DIR = DICT_PATH + "non_explicit_classifier/"
 
 # file paths:
 TRAIN_DATA_PATH = TRAIN_DIR + 'pdtb-data.json'
@@ -28,6 +29,7 @@ TRAIN_MODEL_ARG_POS_CL = TRAIN_OUT_MODEL_DIR + 'arg_pos_cl.pickle'
 
 
 SORTED_EXP_CONN_PATH = DATA_DIR + 'sortedExpConn.txt'
+BROWN_CLUSTER_PATH = DATA_DIR + 'brown_cluster_3200.txt'
 
 ''' connnective dict '''
 CONNECTIVE_DICT_CPOS_PATH = DICT_CONN_DIR + "cpos_dict.txt"
@@ -52,3 +54,9 @@ ARG_POSITION_DICT_PREV2 = DICT_ARG_POS_DIR + "prev2_dict.txt"
 ARG_POSITION_DICT_PREV2POS = DICT_ARG_POS_DIR + "prev2pos_dict.txt"
 ARG_POSITION_DICT_PREV2_C = DICT_ARG_POS_DIR + "prev2_C_dict.txt"
 ARG_POSITION_DICT_PREV2POS_CPOS = DICT_ARG_POS_DIR + "prev2pos_Cpos_dict.txt"
+
+''' Non-Explicit Dict '''
+NON_EXPLICIT_DICT_WORD_PAIRS = DICT_NON_EXPLICIT_DIR + "word_pairs.txt"
+NON_EXPLICIT_DICT_PRODUCTION_RULES = DICT_NON_EXPLICIT_DIR + "production_rules.txt"
+NON_EXPLICIT_DICT_DEPENDENCY_RULES = DICT_NON_EXPLICIT_DIR + "dependency_rules.txt"
+NON_EXPLICIT_DICT_BROWN_CLUSTER = DICT_NON_EXPLICIT_DIR + "arg_brown_cluster.txt"

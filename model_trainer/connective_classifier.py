@@ -60,9 +60,6 @@ class Connective_classifier(object):
             true_conn_indices = []
             if data_json['Type'] == 'Explicit':
                 true_conn_indices = [token[2] for token in data_json['Connective']['TokenList']]
-                #true_conn_indices_begin = data_json['Connective']['TokenList'][0][2]
-                #true_conn_length = len(data_json['Connective']['RawText'].split(' '))
-                #true_conn_indices = range(true_conn_indices_begin, true_conn_indices_begin + true_conn_length)
 
             for (sent_index, conn_indices) in conn_list:
                 doc_conn_indices = conn_indices
@@ -248,9 +245,6 @@ class Connective_classifier(object):
             true_conn_indices = []
             if data_json['Type'] == 'Explicit':
                 true_conn_indices = [token[2] for token in data_json['Connective']['TokenList']]
-                #true_conn_indices_begin = data_json['Connective']['TokenList'][0][2]
-                #true_conn_length = len(data_json['Connective']['RawText'].split(' '))
-                #true_conn_indices = range(true_conn_indices_begin, true_conn_indices_begin + true_conn_length)
 
             for (sent_index, conn_indices) in conn_list:
                 doc_conn_indices = conn_indices

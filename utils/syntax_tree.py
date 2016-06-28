@@ -9,9 +9,11 @@ class Syntax_tree:
         except:
             self.tree = None
 
+    # cc001
     def print_tree(self):
         print self.tree
 
+    # cc001
     def get_node_path_to_root(self, node):
         path = ""
         while node:
@@ -20,6 +22,7 @@ class Syntax_tree:
         path = path[:-3] if len(path) > 3 else path
         return path
 
+    # cc001
     def get_leaf_node_by_token_index(self, token_index):
         leaves = self.tree.leaves()
         if token_index >= len(leaves) :

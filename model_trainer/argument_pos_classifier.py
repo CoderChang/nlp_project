@@ -7,7 +7,6 @@ import pickle
 sys.path.append('..')
 import config
 import utils.util as util
-import utils.conn_util as conn_util
 
 
 class Argument_pos_classifier(object):
@@ -57,7 +56,6 @@ class Argument_pos_classifier(object):
         for data_json in data_json_list:
             tmp_DocID = data_json['DocID']
             doc = all_parse_dicts[tmp_DocID]
-            conn_list = conn_util.get_doc_conns(doc)
 
             if data_json['Type'] == 'Explicit':
                 conn_indices = [token[4] for token in data_json['Connective']['TokenList']]
@@ -279,7 +277,6 @@ class Argument_pos_classifier(object):
         for data_json in data_json_list:
             tmp_DocID = data_json['DocID']
             doc = all_parse_dicts[tmp_DocID]
-            conn_list = conn_util.get_doc_conns(doc)
 
             if data_json['Type'] == 'Explicit':
                 conn_indices = [token[4] for token in data_json['Connective']['TokenList']]
@@ -293,11 +290,12 @@ class Argument_pos_classifier(object):
                     if sent_offset_begin <= data_arg1_offset_begin <= sent_offset_end:
                         arg1_sentence_index = ind
                 tmp_feature = self.extract_features(doc, conn_sentence_index, conn_indices)
-                test_examples.append(tmp_feature)
                 if arg1_sentence_index == conn_sentence_index:
                     train_examples.append((tmp_feature, 'SS'))
+                    test_examples.append(tmp_feature)
                 elif arg1_sentence_index < conn_sentence_index:
                     train_examples.append((tmp_feature, 'PS'))
+                    test_examples.append(tmp_feature)
 
         print 'test_examples generated, test classifier ...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
