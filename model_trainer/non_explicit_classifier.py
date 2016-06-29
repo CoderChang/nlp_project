@@ -57,9 +57,9 @@ class Non_explicit_classifier(object):
         with open(pdtb_parses_file) as f2:
             all_parse_dicts = json.loads(f2.read())
 
-        #train_num = 1000
-        #print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
-        #data_json_list = data_json_list[:train_num]
+        train_num = 1000
+        print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
+        data_json_list = data_json_list[:train_num]
 
         print 'generating train_examples...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -96,12 +96,12 @@ class Non_explicit_classifier(object):
         print '------------------------------------------'
 
         # MaxentClassifier
-        #GIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[0]
-        #self.classifier = nltk.MaxentClassifier.train(train_examples, GIS_algorithm, trace=0, max_iter=1000)
+        GIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[0]
+        self.classifier = nltk.MaxentClassifier.train(train_examples, GIS_algorithm, trace=0, max_iter=1000)
         #IIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[1]
         #self.classifier = nltk.MaxentClassifier.train(train_examples, IIS_algorithm, trace=0, max_iter=1000)
         # NaiveBayesClassifier
-        self.classifier = nltk.classify.NaiveBayesClassifier.train(train_examples)
+        #self.classifier = nltk.classify.NaiveBayesClassifier.train(train_examples)
 
         print 'classifier completed ...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -109,15 +109,17 @@ class Non_explicit_classifier(object):
 
 
     # used for prediction
-    def get_non_explicit_relations(doc, non_explicit_relations):
+    def get_non_explicit_relations(self, doc, non_explicit_relations):
+        test_features = []
+        for relation in non_explicit_relations :
+            tmp_feature = self.extract_features(doc, relation)
+            test_features.append(tmp_feature)
+        result_list = self.classifier.classify_many(test_features)
+        for i in range(len(result_list)):
+            non_explicit_relations[i]['Sense'] = [result_list[i]]
+            if result_list[i] == 'EntRel':
+                non_explicit_relations[i]['Type'] = 'EntRel'
         return non_explicit_relations
-
-    # used for prediction
-    def divide_non_explicit_relations(non_explicit_relations, doc):
-        EntRel_relations = []
-        Implicit_AltLex_relations = []
-
-        return EntRel_relations, Implicit_AltLex_relations
 
 
     def extract_features(self, doc, relation):
@@ -178,9 +180,9 @@ class Non_explicit_classifier(object):
         with open(pdtb_parses_file) as f2:
             all_parse_dicts = json.loads(f2.read())
 
-        test_num = 1000
-        print 'length of data_json_list: ', len(data_json_list), 'test_num: ', test_num
-        data_json_list = data_json_list[:test_num]
+        #test_num = 1000
+        #print 'length of data_json_list: ', len(data_json_list), 'test_num: ', test_num
+        #data_json_list = data_json_list[:test_num]
 
         print 'generating test_examples...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
