@@ -199,18 +199,31 @@ def get_wn_pos(tree_bank_tag):
 def get_feature(feat_dict, dict, feat):
     # feat_dict = {
     #     dimension = 1000,
-    #     dict_index = 10/None,
+    #     dict_index = [10]/[]
     # }
     feat_dict['dimension'] = len(dict)
+    feat_dict['dict_index'] = []
     if feat in dict:
-        feat_dict['dict_index'] = dict[feat]
+        feat_dict['dict_index'].append(dict[feat])
+    return feat_dict
+
+def get_feature_by_list(feat_dict, dict, feat_list):
+    # feat_dict = {
+    #     dimension = 1000,
+    #     dict_index = [10, 20, 100]/[]
+    # }
+    feat_dict['dimension'] = len(dict)
+    feat_dict['dict_index'] = []
+    for feat in feat_list:
+        if feat in dict:
+            feat_dict['dict_index'].append(dict[feat])
     return feat_dict
 
 def merge_features(features):
     merged_feature = {}
     total_index = 0
     for feature in features:
-        if 'dict_index' in feature and feature['dict_index'] != None:
-            merged_feature[total_index + feature['dict_index']] = 1
+        for feat_index in feature['dict_index']:
+            merged_feature[total_index + feat_index] = 1
         total_index += feature['dimension']
     return merged_feature

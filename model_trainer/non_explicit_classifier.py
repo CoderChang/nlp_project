@@ -73,22 +73,24 @@ class Non_explicit_classifier(object):
             if data_json['Type'] != 'Explicit':
                 relation = data_json
                 tmp_feature = self.extract_features(doc, relation)
-                if relation['Sense'] in self.implicit_sense_list:
-                    train_examples.append((tmp_feature, relation['Sense']))
+                for tmp_sense in relation['Sense']:
+                    if tmp_sense in self.implicit_sense_list:
+                        train_examples.append((tmp_feature, tmp_sense))
 
-                if relation['Sense'] in Sense_statistics :
-                    Sense_statistics[relation['Sense']] += 1
-                else :
-                    Sense_statistics[relation['Sense']] = 0
+                    if tmp_sense in Sense_statistics :
+                        Sense_statistics[tmp_sense] += 1
+                    else :
+                        Sense_statistics[tmp_sense] = 1
+
                 if relation['Type'] in Type_statistics :
-                    Type_statistics[relation['Sense']] += 1
+                    Type_statistics[relation['Type']] += 1
                 else :
-                    Type_statistics[relation['Sense']] = 0
+                    Type_statistics[relation['Type']] = 1
 
-        for k, v in Sense_statistics :
-            print k + ': ' + str(v)
-        for k, v in Type_statistics :
-            print k + ': ' + str(v)
+        for k in Sense_statistics :
+            print k + ': ' + str(Sense_statistics[k])
+        for k in Type_statistics :
+            print k + ': ' + str(Type_statistics[k])
         print 'train_examples generated, train classifier ...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
         print '------------------------------------------'
@@ -158,12 +160,12 @@ class Non_explicit_classifier(object):
         word_pairs = conn_util.get_word_pairs(relation, doc)
 
         features = []
-        features.append(util.get_feature(feat_dict_arg1_dependency, self.dict_dependency_rules, Arg1_dependency_rules))
-        features.append(util.get_feature(feat_dict_arg2_dependency, self.dict_dependency_rules, Arg2_dependency_rules))
-        features.append(util.get_feature(feat_dict_arg1_and_arg2_dependency, self.dict_dependency_rules, Arg1_and_Arg2_dependency_rules))
-        features.append(util.get_feature(feat_dict_production, self.dict_production_rules, production_rules))
-        features.append(util.get_feature(feat_dict_cluster, self.dict_brown_cluster, brown_cluster))
-        features.append(util.get_feature(feat_dict_word_pairs, self.dict_word_pairs, word_pairs))
+        features.append(util.get_feature_by_list(feat_dict_arg1_dependency, self.dict_dependency_rules, Arg1_dependency_rules))
+        features.append(util.get_feature_by_list(feat_dict_arg2_dependency, self.dict_dependency_rules, Arg2_dependency_rules))
+        features.append(util.get_feature_by_list(feat_dict_arg1_and_arg2_dependency, self.dict_dependency_rules, Arg1_and_Arg2_dependency_rules))
+        features.append(util.get_feature_by_list(feat_dict_production, self.dict_production_rules, production_rules))
+        features.append(util.get_feature_by_list(feat_dict_cluster, self.dict_brown_cluster, brown_cluster))
+        features.append(util.get_feature_by_list(feat_dict_word_pairs, self.dict_word_pairs, word_pairs))
 
         joint_features = util.merge_features(features)
         #print 'joint_features', joint_features
@@ -176,9 +178,9 @@ class Non_explicit_classifier(object):
         with open(pdtb_parses_file) as f2:
             all_parse_dicts = json.loads(f2.read())
 
-        #test_num = 1000
-        #print 'length of data_json_list: ', len(data_json_list), 'test_num: ', test_num
-        #data_json_list = data_json_list[:test_num]
+        test_num = 1000
+        print 'length of data_json_list: ', len(data_json_list), 'test_num: ', test_num
+        data_json_list = data_json_list[:test_num]
 
         print 'generating test_examples...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -193,8 +195,9 @@ class Non_explicit_classifier(object):
             if data_json['Type'] != 'Explicit':
                 relation = data_json
                 tmp_feature = self.extract_features(doc, relation)
-                train_examples.append((tmp_feature, relation['Sense']))
-                test_examples.append(tmp_feature)
+                for tmp_sense in relation['Sense']:
+                    train_examples.append((tmp_feature, tmp_sense))
+                    test_examples.append(tmp_feature)
 
         print 'test_examples generated, test classifier ...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -217,6 +220,6 @@ if __name__ == '__main__':
     print 'train ...................................................................'
     classifier.train_model(config.TRAIN_DATA_PATH, config.TRAIN_PARSES_PATH)
     classifier.write_model_to_file(config.TRAIN_MODEL_NON_EXPLICIT_CL)
-    #print 'test on training set ....................................................'
-    #classifier.load_model_from_file(config.TRAIN_MODEL_NON_EXPLICIT_CL)
-    #classifier.test_model(config.TRAIN_DATA_PATH, config.TRAIN_PARSES_PATH)
+    print 'test on training set ....................................................'
+    classifier.load_model_from_file(config.TRAIN_MODEL_NON_EXPLICIT_CL)
+    classifier.test_model(config.TRAIN_DATA_PATH, config.TRAIN_PARSES_PATH)
