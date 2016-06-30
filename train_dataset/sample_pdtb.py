@@ -3,10 +3,10 @@ import json
 pdtb_data_file = 'pdtb-data.json'
 pdtb_parses_file = 'pdtb-parses.json'
 
-output_data_file = 'output_pdtb_data.json'
-output_parses_file = 'output_pdtb_parses.json'
+output_data_file = 'pdtb-data-dev.json'
+output_parses_file = 'pdtb-parses-dev.json'
 
-sample_doc_num = 50
+sample_doc_num = 70
 
 
 print 'opening files ...'
