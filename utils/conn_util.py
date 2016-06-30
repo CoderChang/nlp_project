@@ -96,13 +96,34 @@ def fake_non_explicit_relations(doc_id, doc, adjacent_non_exp_list):
         non_explicit_relations.append(relation)
     return non_explicit_relations
 
+def fake_divide_non_explicit_relations(non_explicit_relations, doc):
+    EntRel_relations = []
+    Implicit_AltLex_relations = []
+    for relation in non_explicit_relations :
+        if relation['Sense'][0] == "EntRel":
+            Arg1_offset_in_sent = [item[4] for item in relation["Arg1"]["TokenList"]]
+            Arg2_offset_in_sent = [item[4] for item in relation["Arg2"]["TokenList"]]
+            Arg1_sent_index = relation["Arg1"]["TokenList"][0][3]
+            Arg2_sent_index = relation["Arg2"]["TokenList"][0][3]
+            relation['Arg1']['TokenList'] = get_doc_offset(doc, Arg1_sent_index, Arg1_offset_in_sent)
+            relation['Arg2']['TokenList'] = get_doc_offset(doc, Arg2_sent_index, Arg2_offset_in_sent)
+            EntRel_relations.append(relation)
+        else:
+            Arg1_offset_in_sent = [item[4] for item in relation["Arg1"]["TokenList"]]
+            Arg2_offset_in_sent = [item[4] for item in relation["Arg2"]["TokenList"]]
+            Arg1_sent_index = relation["Arg1"]["TokenList"][0][3]
+            Arg2_sent_index = relation["Arg2"]["TokenList"][0][3]
+            relation['Arg1']['TokenList'] = get_doc_offset(doc, Arg1_sent_index, Arg1_offset_in_sent)
+            relation['Arg2']['TokenList'] = get_doc_offset(doc, Arg2_sent_index, Arg2_offset_in_sent)
+            EntRel_relations.append(relation)
+            Implicit_AltLex_relations.append(relation)
+    return EntRel_relations, Implicit_AltLex_relations
 
 def divide_non_explicit_relations(non_explicit_relations, doc):
     EntRel_relations = []
     Implicit_AltLex_relations = []
     for relation in non_explicit_relations :
         if relation['Sense'][0] == "EntRel":
-            DocID = relation["DocID"]
             Arg1_offset_in_sent = [item[4] for item in relation["Arg1"]["TokenList"]]
             Arg2_offset_in_sent = [item[4] for item in relation["Arg2"]["TokenList"]]
             Arg1_sent_index = relation["Arg1"]["TokenList"][0][3]

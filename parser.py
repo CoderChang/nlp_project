@@ -30,7 +30,6 @@ class DiscourseParser(object):
     def parse_doc(self, doc, doc_id):
         print "Parsing doc: " + doc_id
         # my code
-        explicit_relations = []
         non_explicit_relations = []
         conn_list = conn_util.get_doc_conns(doc)
 
@@ -47,7 +46,8 @@ class DiscourseParser(object):
         non_explicit_relations = conn_util.fake_non_explicit_relations(doc_id, doc, adjacent_non_exp_list)
 
         non_explicit_relations = self.non_exp_classifier.get_non_explicit_relations(doc, non_explicit_relations)
-        EntRel_relations, Implicit_AltLex_relations = conn_util.divide_non_explicit_relations(non_explicit_relations, doc)
+        #EntRel_relations, Implicit_AltLex_relations = conn_util.divide_non_explicit_relations(non_explicit_relations, doc)
+        EntRel_relations, Implicit_AltLex_relations = conn_util.fake_divide_non_explicit_relations(non_explicit_relations, doc)
 
         output = EntRel_relations + Implicit_AltLex_relations
         print 'Output non-explicit relations num: ', len(output)

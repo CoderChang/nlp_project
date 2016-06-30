@@ -57,7 +57,7 @@ class Non_explicit_classifier(object):
         with open(pdtb_parses_file) as f2:
             all_parse_dicts = json.loads(f2.read())
 
-        train_num = 1000
+        train_num = 5000
         print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
         data_json_list = data_json_list[:train_num]
 
