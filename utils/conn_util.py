@@ -1,5 +1,6 @@
 import sys
 import util
+import copy
 from syntax_tree import Syntax_tree
 
 sys.path.append('..')
@@ -271,3 +272,87 @@ def get_word_pairs(relation, doc):
     return word_pairs
 
 
+#def _arg_clauses(doc, relation, Arg):
+#    Arg_sent_indices = sorted([item[3] for item in relation[Arg]["TokenList"]])
+#    Arg_token_indices = sorted([item[4] for item in relation[Arg]["TokenList"]])
+#
+#    if len(set(Arg_sent_indices)) != 1:
+#        return []
+#    relation_ID = relation["ID"]
+#    sent_index = Arg_sent_indices[0]
+#
+#    sent_tokens = [(index, doc["sentences"][sent_index]["words"][index][0]) for index in Arg_token_indices]
+#
+#    punctuation = "...,:;?!~--"
+#    # first, use punctuation symbols to split the sentence
+#    _clause_indices_list = []#[[(1,"I")..], ..]
+#    temp = []
+#    for index, word in sent_tokens:
+#        if word not in punctuation:
+#            temp.append((index, word))
+#        else:
+#            if temp != []:
+#                _clause_indices_list.append(temp)
+#                temp = []
+#    if temp != []:
+#        _clause_indices_list.append(temp)
+#
+#    clause_indices_list = []
+#    for clause_indices in _clause_indices_list:
+#        temp = util.list_strip_punctuation(clause_indices)
+#        if temp != []:
+#            clause_indices_list.append([item[0] for item in temp])
+#
+#    # then use SBAR tag in its parse tree to split each part into clauses.
+#    parse_tree = doc["sentences"][sent_index]["parsetree"].strip()
+#    syntax_tree = Syntax_tree(parse_tree)
+#
+#    if syntax_tree.tree == None:
+#        return []
+#
+#    clause_list = []
+#    for clause_indices in clause_indices_list:
+#        clause_tree = _get_subtree(syntax_tree, clause_indices)
+#        # BFS
+#        flag = 0
+#        for node in clause_tree.tree.traverse(strategy="levelorder"):
+#            if node.name == "SBAR":
+#                temp1 = [node.index for node in node.get_leaves()]
+#                temp2 = sorted(list(set(clause_indices) - set(temp1)))
+#
+#                if temp2 == []:
+#                    clause_list.append(temp1)
+#                else:
+#                    if temp1[0] < temp2 [0]:
+#                        clause_list.append(temp1)
+#                        clause_list.append(temp2)
+#                    else:
+#                        clause_list.append(temp2)
+#                        clause_list.append(temp1)
+#                flag = 1
+#                break
+#        if flag == 0:
+#            clause_list.append(clause_indices)
+#    clauses = []# [([1,2,3],yes), ([4, 5],no), ]
+#    for clause_indices in clause_list:
+#        clauses.append((clause_indices, ""))
+#
+#    return Arg_Clauses(relation_ID, Arg, DocID, sent_index, clauses)
+#
+#
+#def _get_subtree(syntax_tree, clause_indices):
+#    copy_tree = copy.deepcopy(syntax_tree)
+#
+#    for index, leaf in enumerate(copy_tree.tree.get_leaves()):
+#        leaf.add_feature("index",index)
+#
+#    clause_nodes = []
+#    for index in clause_indices:
+#        node = copy_tree.get_leaf_node_by_token_index(index)
+#        clause_nodes.append(node)
+#
+#    for node in copy_tree.tree.traverse(strategy="levelorder"):
+#        node_leaves = node.get_leaves()
+#        if set(node_leaves) & set(clause_nodes) == set([]):
+#            node.detach()
+#    return copy_tree

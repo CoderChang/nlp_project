@@ -308,7 +308,7 @@ class Argument_pos_classifier(object):
         for i in range(len(result_list)):
             if result_list[i] == train_examples[i][1]:
                 true_predict_num += 1
-        print 'true_predict_num: ', true_predict_num, ' precision: ', float(true_predict_num)/len(result_list)
+        print 'true_predict_num: ', true_predict_num, ' accuracy: ', float(true_predict_num)/len(result_list)
 
         print time.strftime('%Y-%m-%d %H:%M:%S')
         print '------------------------------------------'

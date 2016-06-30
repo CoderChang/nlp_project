@@ -1,4 +1,5 @@
 import sys
+import os
 import json
 import time
 import nltk
@@ -51,49 +52,56 @@ class Non_explicit_classifier(object):
         f.close()
 
     def train_model(self, pdtb_data_file, pdtb_parses_file):
-        print 'opening files ...'
-        with open(pdtb_data_file) as f1:
-            data_json_list = [json.loads(line) for line in f1.readlines()]
-        with open(pdtb_parses_file) as f2:
-            all_parse_dicts = json.loads(f2.read())
+        if os.path.exists(config.TRAIN_EXAMPLES_NON_EXPLICIT_TRAIN):
+            print 'using existed training examples ...'
+            train_examples = util.load_examples_from_file(config.TRAIN_EXAMPLES_NON_EXPLICIT_TRAIN)
+            print 'training examples loaded.'
+        else:
+            print 'opening files ...'
+            with open(pdtb_data_file) as f1:
+                data_json_list = [json.loads(line) for line in f1.readlines()]
+            with open(pdtb_parses_file) as f2:
+                all_parse_dicts = json.loads(f2.read())
 
-        train_num = 5000
-        print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
-        data_json_list = data_json_list[:train_num]
+            train_num = 5000
+            print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
+            data_json_list = data_json_list[:train_num]
 
-        print 'generating train_examples...'
-        print time.strftime('%Y-%m-%d %H:%M:%S')
-        print '------------------------------------------'
-        Sense_statistics, Type_statistics = {}, {}
-        train_examples = []
-        for data_json in data_json_list:
-            tmp_DocID = data_json['DocID']
-            doc = all_parse_dicts[tmp_DocID]
+            print 'generating train_examples...'
+            print time.strftime('%Y-%m-%d %H:%M:%S')
+            print '------------------------------------------'
+            Sense_statistics, Type_statistics = {}, {}
+            train_examples = []
+            for data_json in data_json_list:
+                tmp_DocID = data_json['DocID']
+                doc = all_parse_dicts[tmp_DocID]
 
-            if data_json['Type'] != 'Explicit':
-                relation = data_json
-                tmp_feature = self.extract_features(doc, relation)
-                for tmp_sense in relation['Sense']:
-                    if tmp_sense in self.implicit_sense_list:
-                        train_examples.append((tmp_feature, tmp_sense))
+                if data_json['Type'] != 'Explicit':
+                    relation = data_json
+                    tmp_feature = self.extract_features(doc, relation)
+                    for tmp_sense in relation['Sense']:
+                        if tmp_sense in self.implicit_sense_list:
+                            train_examples.append((tmp_feature, tmp_sense))
 
-                    if tmp_sense in Sense_statistics :
-                        Sense_statistics[tmp_sense] += 1
+                        if tmp_sense in Sense_statistics :
+                            Sense_statistics[tmp_sense] += 1
+                        else :
+                            Sense_statistics[tmp_sense] = 1
+
+                    if relation['Type'] in Type_statistics :
+                        Type_statistics[relation['Type']] += 1
                     else :
-                        Sense_statistics[tmp_sense] = 1
+                        Type_statistics[relation['Type']] = 1
 
-                if relation['Type'] in Type_statistics :
-                    Type_statistics[relation['Type']] += 1
-                else :
-                    Type_statistics[relation['Type']] = 1
+            util.write_examples_to_file(config.TRAIN_EXAMPLES_NON_EXPLICIT_TRAIN, train_examples)
 
-        for k in Sense_statistics :
-            print k + ': ' + str(Sense_statistics[k])
-        for k in Type_statistics :
-            print k + ': ' + str(Type_statistics[k])
-        print 'train_examples generated, train classifier ...'
-        print time.strftime('%Y-%m-%d %H:%M:%S')
-        print '------------------------------------------'
+            for k in Sense_statistics :
+                print k + ': ' + str(Sense_statistics[k])
+            for k in Type_statistics :
+                print k + ': ' + str(Type_statistics[k])
+            print 'train_examples generated, train classifier ...'
+            print time.strftime('%Y-%m-%d %H:%M:%S')
+            print '------------------------------------------'
 
         # MaxentClassifier
         GIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[0]
@@ -174,44 +182,52 @@ class Non_explicit_classifier(object):
         return joint_features
 
     def test_model(self, pdtb_data_file, pdtb_parses_file):
-        print 'opening files ...'
-        with open(pdtb_data_file) as f1:
-            data_json_list = [json.loads(line) for line in f1.readlines()]
-        with open(pdtb_parses_file) as f2:
-            all_parse_dicts = json.loads(f2.read())
+        if os.path.exists(config.TRAIN_EXAMPLES_NON_EXPLICIT_TEST_TEST) and os.path.exists(config.TRAIN_EXAMPLES_NON_EXPLICIT_TEST_TRAIN):
+            print 'using existed test examples ...'
+            test_examples = util.load_examples_from_file(config.TRAIN_EXAMPLES_NON_EXPLICIT_TEST_TEST)
+            test_train_examples = util.load_examples_from_file(config.TRAIN_EXAMPLES_NON_EXPLICIT_TEST_TRAIN)
+            print 'test examples loaded.'
+        else:
+            print 'opening files ...'
+            with open(pdtb_data_file) as f1:
+                data_json_list = [json.loads(line) for line in f1.readlines()]
+            with open(pdtb_parses_file) as f2:
+                all_parse_dicts = json.loads(f2.read())
 
-        #test_num = 1000
-        #print 'length of data_json_list: ', len(data_json_list), 'test_num: ', test_num
-        #data_json_list = data_json_list[:test_num]
+            #test_num = 1000
+            #print 'length of data_json_list: ', len(data_json_list), 'test_num: ', test_num
+            #data_json_list = data_json_list[:test_num]
 
-        print 'generating test_examples...'
-        print time.strftime('%Y-%m-%d %H:%M:%S')
-        print '------------------------------------------'
+            print 'generating test_examples...'
+            print time.strftime('%Y-%m-%d %H:%M:%S')
+            print '------------------------------------------'
 
-        train_examples = []
-        test_examples = []
-        for data_json in data_json_list:
-            tmp_DocID = data_json['DocID']
-            doc = all_parse_dicts[tmp_DocID]
+            test_train_examples = []
+            test_examples = []
+            for data_json in data_json_list:
+                tmp_DocID = data_json['DocID']
+                doc = all_parse_dicts[tmp_DocID]
 
-            if data_json['Type'] != 'Explicit':
-                relation = data_json
-                tmp_feature = self.extract_features(doc, relation)
-                for tmp_sense in relation['Sense']:
-                    train_examples.append((tmp_feature, tmp_sense))
-                    test_examples.append(tmp_feature)
+                if data_json['Type'] != 'Explicit':
+                    relation = data_json
+                    tmp_feature = self.extract_features(doc, relation)
+                    for tmp_sense in relation['Sense']:
+                        test_train_examples.append((tmp_feature, tmp_sense))
+                        test_examples.append(tmp_feature)
 
-        print 'test_examples generated, test classifier ...'
-        print time.strftime('%Y-%m-%d %H:%M:%S')
-        print '------------------------------------------'
+            util.write_examples_to_file(config.TRAIN_EXAMPLES_NON_EXPLICIT_TEST_TEST, test_examples)
+            util.write_examples_to_file(config.TRAIN_EXAMPLES_NON_EXPLICIT_TEST_TRAIN, test_train_examples)
+            print 'test_examples generated, test classifier ...'
+            print time.strftime('%Y-%m-%d %H:%M:%S')
+            print '------------------------------------------'
 
         result_list = self.classifier.classify_many(test_examples)
         print 'length of result_list: ', len(result_list)
         true_predict_num = 0
         for i in range(len(result_list)):
-            if result_list[i] == train_examples[i][1]:
+            if result_list[i] == test_train_examples[i][1]:
                 true_predict_num += 1
-        print 'true_predict_num: ', true_predict_num, ' precision: ', float(true_predict_num)/len(result_list)
+        print 'true_predict_num: ', true_predict_num, ' accuracy: ', float(true_predict_num)/len(result_list)
 
         print time.strftime('%Y-%m-%d %H:%M:%S')
         print '------------------------------------------'

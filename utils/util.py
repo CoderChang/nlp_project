@@ -3,6 +3,7 @@ import sys
 import string
 import json
 import re
+import pickle
 from PorterStemmer import PorterStemmer
 
 from multiprocessing import Process
@@ -227,3 +228,16 @@ def merge_features(features):
             merged_feature[total_index + feat_index] = 1
         total_index += feature['dimension']
     return merged_feature
+
+
+def write_examples_to_file(file_path, examples):
+    f = open(file_path, 'wb')
+    pickle.dump(examples, f)
+    f.close()
+
+def load_examples_from_file(file_path):
+    f = open(file_path, 'rb')
+    examples = pickle.load(f)
+    f.close()
+    return examples
+

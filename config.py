@@ -1,4 +1,5 @@
-CWD = '/home/slhome/cc001/Documents/nlp/nlp_project/'
+#CWD = '/home/slhome/cc001/Documents/nlp/nlp_project/'
+CWD = '/home/cc001/Documents/nlp_project/'
 
 # directories:
 DATA_DIR = CWD + 'data/'
@@ -27,6 +28,12 @@ TRAIN_FEATURE_CONN_CL = TRAIN_OUT_FEATURE_DIR + 'conn_cl_feature.txt'
 TRAIN_MODEL_CONN_CL = TRAIN_OUT_MODEL_DIR + 'conn_cl.pickle'
 TRAIN_MODEL_ARG_POS_CL = TRAIN_OUT_MODEL_DIR + 'arg_pos_cl.pickle'
 TRAIN_MODEL_NON_EXPLICIT_CL = TRAIN_OUT_MODEL_DIR + 'non_exp_cl.pickle'
+TRAIN_MODEL_IMPLICIT_ARG1_EXTRACTOR = TRAIN_OUT_MODEL_DIR + 'implicit_arg1_extractor.pickle'
+TRAIN_MODEL_IMPLICIT_ARG2_EXTRACTOR = TRAIN_OUT_MODEL_DIR + 'implicit_arg2_extractor.pickle'
+
+TRAIN_EXAMPLES_NON_EXPLICIT_TRAIN = TRAIN_OUT_MODEL_DIR + 'non_exp_examples_train.pickle'
+TRAIN_EXAMPLES_NON_EXPLICIT_TEST_TRAIN = TRAIN_OUT_MODEL_DIR + 'non_exp_examples_test_train.pickle'
+TRAIN_EXAMPLES_NON_EXPLICIT_TEST_TEST = TRAIN_OUT_MODEL_DIR + 'non_exp_examples_test_test.pickle'
 
 
 SORTED_EXP_CONN_PATH = DATA_DIR + 'sortedExpConn.txt'
