@@ -12,7 +12,7 @@ import utils.conn_util as conn_util
 
 WRITE_EXAMPLE_FLAG = False
 
-class Non_explicit_classifier(object):
+class Implicit_arg2_extractor(object):
 
     def __init__(self):
         self.classifier = None
@@ -48,7 +48,7 @@ class Non_explicit_classifier(object):
             with open(pdtb_parses_file) as f2:
                 all_parse_dicts = json.loads(f2.read())
 
-            train_num = 1000
+            train_num = 10000
             print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
             data_json_list = data_json_list[:train_num]
 
@@ -64,15 +64,16 @@ class Non_explicit_classifier(object):
                 if data_json['Type'] != 'Explicit':
                     relation = data_json
                     true_arg_indices = [token[4] for token in relation['Arg2']['TokenList']]
-                    for arg_clauses in conn_util.get_arg2_clauses(doc, relation):
+                    sent_index = relation['Arg2']['TokenList'][0][3]
+                    for arg_clauses in conn_util.get_sentence_clauses(doc, sent_index):
                         if arg_clauses == []:
                             continue
                         for clause_index in range(len(arg_clauses.clauses)):
                             tmp_feature = self.extract_features(arg_clauses, clause_index, doc)
                             curr_clause_indices = arg_clauses.clauses[clause_index][0]
-                            print 'curr_clause_indices: ', curr_clause_indices
-                            print 'true_arg_indices: ', true_arg_indices
-                            raw_input()
+                            #print 'curr_clause_indices: ', curr_clause_indices
+                            #print 'true_arg_indices: ', true_arg_indices
+                            #raw_input()
                             if set(curr_clause_indices) <= set(true_arg_indices):
                                 train_examples.append((tmp_feature, 'yes'))
                                 yes_num += 1
@@ -89,12 +90,12 @@ class Non_explicit_classifier(object):
             print '------------------------------------------'
 
         # MaxentClassifier
-        #GIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[0]
-        #self.classifier = nltk.MaxentClassifier.train(train_examples, GIS_algorithm, trace=0, max_iter=1000)
+        GIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[0]
+        self.classifier = nltk.MaxentClassifier.train(train_examples, GIS_algorithm, trace=0, max_iter=1000)
         #IIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[1]
         #self.classifier = nltk.MaxentClassifier.train(train_examples, IIS_algorithm, trace=0, max_iter=1000)
         # NaiveBayesClassifier
-        self.classifier = nltk.classify.NaiveBayesClassifier.train(train_examples)
+        #self.classifier = nltk.classify.NaiveBayesClassifier.train(train_examples)
 
         print 'classifier completed ...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -167,14 +168,13 @@ class Non_explicit_classifier(object):
             with open(pdtb_parses_file) as f2:
                 all_parse_dicts = json.loads(f2.read())
 
-            test_num = 1000
-            print 'length of data_json_list: ', len(data_json_list), 'test_num: ', test_num
-            data_json_list = data_json_list[:test_num]
+            #test_num = 1000
+            #print 'length of data_json_list: ', len(data_json_list), 'test_num: ', test_num
+            #data_json_list = data_json_list[:test_num]
 
             print 'generating test_examples...'
             print time.strftime('%Y-%m-%d %H:%M:%S')
             print '------------------------------------------'
-
             test_train_examples = []
             test_examples = []
             for data_json in data_json_list:
@@ -184,7 +184,8 @@ class Non_explicit_classifier(object):
                 if data_json['Type'] != 'Explicit':
                     relation = data_json
                     true_arg_indices = [token[4] for token in relation['Arg2']['TokenList']]
-                    for arg_clauses in conn_util.get_arg2_clauses(doc, relation):
+                    sent_index = relation['Arg2']['TokenList'][0][3]
+                    for arg_clauses in conn_util.get_sentence_clauses(doc, sent_index):
                         if arg_clauses == []:
                             continue
                         for clause_index in range(len(arg_clauses.clauses)):
@@ -217,7 +218,7 @@ class Non_explicit_classifier(object):
 
 
 if __name__ == '__main__':
-    classifier = Non_explicit_classifier()
+    classifier = Implicit_arg2_extractor()
     print 'train ...................................................................'
     classifier.train_model(config.TRAIN_DATA_PATH, config.TRAIN_PARSES_PATH)
     classifier.write_model_to_file(config.TRAIN_MODEL_IMPLICIT_ARG2_EXTRACTOR)

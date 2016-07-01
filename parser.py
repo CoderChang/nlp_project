@@ -5,8 +5,8 @@ import utils.conn_util as conn_util
 from model_trainer.connective_classifier import Connective_classifier
 from model_trainer.argument_pos_classifier import Argument_pos_classifier
 from model_trainer.non_explicit_classifier import Non_explicit_classifier
-#from model_trainer.implicit_arg1_extractor import Implicit_arg1_extractor
-#from model_trainer.implicit_arg2_extractor import Implicit_arg2_extractor
+from model_trainer.implicit_arg1_extractor import Implicit_arg1_extractor
+from model_trainer.implicit_arg2_extractor import Implicit_arg2_extractor
 
 class DiscourseParser(object):
 

@@ -12,7 +12,7 @@ import utils.conn_util as conn_util
 
 WRITE_EXAMPLE_FLAG = False
 
-class Non_explicit_classifier(object):
+class Implicit_arg1_extractor(object):
 
     def __init__(self):
         self.classifier = None
@@ -63,7 +63,8 @@ class Non_explicit_classifier(object):
                 if data_json['Type'] != 'Explicit':
                     relation = data_json
                     true_arg_indices = [token[4] for token in relation['Arg1']['TokenList']]
-                    for arg_clauses in conn_util.get_arg1_clauses(doc, relation):
+                    sent_index = relation['Arg1']['TokenList'][0][3]
+                    for arg_clauses in conn_util.get_sentence_clauses(doc, sent_index):
                         if arg_clauses == []:
                             continue
                         for clause_index in range(len(arg_clauses.clauses)):
@@ -167,7 +168,6 @@ class Non_explicit_classifier(object):
             print 'generating test_examples...'
             print time.strftime('%Y-%m-%d %H:%M:%S')
             print '------------------------------------------'
-
             test_train_examples = []
             test_examples = []
             for data_json in data_json_list:
@@ -177,7 +177,8 @@ class Non_explicit_classifier(object):
                 if data_json['Type'] != 'Explicit':
                     relation = data_json
                     true_arg_indices = [token[4] for token in relation['Arg1']['TokenList']]
-                    for arg_clauses in conn_util.get_arg1_clauses(doc, relation):
+                    sent_index = relation['Arg1']['TokenList'][0][3]
+                    for arg_clauses in conn_util.get_sentence_clauses(doc, sent_index):
                         if arg_clauses == []:
                             continue
                         for clause_index in range(len(arg_clauses.clauses)):
@@ -210,7 +211,7 @@ class Non_explicit_classifier(object):
 
 
 if __name__ == '__main__':
-    classifier = Non_explicit_classifier()
+    classifier = Implicit_arg1_extractor()
     print 'train ...................................................................'
     classifier.train_model(config.TRAIN_DATA_PATH, config.TRAIN_PARSES_PATH)
     classifier.write_model_to_file(config.TRAIN_MODEL_IMPLICIT_ARG1_EXTRACTOR)

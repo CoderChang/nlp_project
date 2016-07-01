@@ -9,7 +9,7 @@ TEST_DIR = CWD + 'test_dataset/'
 MODEL_TRAINER_DIR = CWD + 'model_trainer/'
 DICT_DIR = CWD + 'dict/'
 
-TRAIN_OUT_EXAMPLE_DIR = CWD + 'train_output/examples/'
+TRAIN_OUT_EXAMPLE_DIR = CWD + 'train_output/feature/'
 TRAIN_OUT_MODEL_DIR = CWD + 'train_output/model/'
 
 DICT_CONN_DIR = DICT_DIR + 'connective/'

@@ -3,3 +3,4 @@ pdtb-parses-dev.json
 pdtb-parses.json
 non_exp_cl.pickle-nb
 *.pyc
+train_output/feature/
