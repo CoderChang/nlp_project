@@ -1,7 +1,9 @@
 import sys
 import util
 import copy
+from nltk.stem.wordnet import WordNetLemmatizer
 from syntax_tree import Syntax_tree
+from ete_syntax_tree import ETESyntax_tree
 
 sys.path.append('..')
 import config
@@ -271,88 +273,207 @@ def get_word_pairs(relation, doc):
             word_pairs.append("%s|%s" % (word1, word2))
     return word_pairs
 
+def get_arg1_clauses(doc, relation):
+    return [_arg_clauses(doc, relation, "Arg1")]
 
-#def _arg_clauses(doc, relation, Arg):
-#    Arg_sent_indices = sorted([item[3] for item in relation[Arg]["TokenList"]])
-#    Arg_token_indices = sorted([item[4] for item in relation[Arg]["TokenList"]])
-#
-#    if len(set(Arg_sent_indices)) != 1:
-#        return []
-#    relation_ID = relation["ID"]
-#    sent_index = Arg_sent_indices[0]
-#
-#    sent_tokens = [(index, doc["sentences"][sent_index]["words"][index][0]) for index in Arg_token_indices]
-#
-#    punctuation = "...,:;?!~--"
-#    # first, use punctuation symbols to split the sentence
-#    _clause_indices_list = []#[[(1,"I")..], ..]
-#    temp = []
-#    for index, word in sent_tokens:
-#        if word not in punctuation:
-#            temp.append((index, word))
-#        else:
-#            if temp != []:
-#                _clause_indices_list.append(temp)
-#                temp = []
-#    if temp != []:
-#        _clause_indices_list.append(temp)
-#
-#    clause_indices_list = []
-#    for clause_indices in _clause_indices_list:
-#        temp = util.list_strip_punctuation(clause_indices)
-#        if temp != []:
-#            clause_indices_list.append([item[0] for item in temp])
-#
-#    # then use SBAR tag in its parse tree to split each part into clauses.
-#    parse_tree = doc["sentences"][sent_index]["parsetree"].strip()
-#    syntax_tree = Syntax_tree(parse_tree)
-#
-#    if syntax_tree.tree == None:
-#        return []
-#
-#    clause_list = []
-#    for clause_indices in clause_indices_list:
-#        clause_tree = _get_subtree(syntax_tree, clause_indices)
-#        # BFS
-#        flag = 0
-#        for node in clause_tree.tree.traverse(strategy="levelorder"):
-#            if node.name == "SBAR":
-#                temp1 = [node.index for node in node.get_leaves()]
-#                temp2 = sorted(list(set(clause_indices) - set(temp1)))
-#
-#                if temp2 == []:
-#                    clause_list.append(temp1)
-#                else:
-#                    if temp1[0] < temp2 [0]:
-#                        clause_list.append(temp1)
-#                        clause_list.append(temp2)
-#                    else:
-#                        clause_list.append(temp2)
-#                        clause_list.append(temp1)
-#                flag = 1
-#                break
-#        if flag == 0:
-#            clause_list.append(clause_indices)
-#    clauses = []# [([1,2,3],yes), ([4, 5],no), ]
-#    for clause_indices in clause_list:
-#        clauses.append((clause_indices, ""))
-#
-#    return Arg_Clauses(relation_ID, Arg, DocID, sent_index, clauses)
-#
-#
-#def _get_subtree(syntax_tree, clause_indices):
-#    copy_tree = copy.deepcopy(syntax_tree)
-#
-#    for index, leaf in enumerate(copy_tree.tree.get_leaves()):
-#        leaf.add_feature("index",index)
-#
-#    clause_nodes = []
-#    for index in clause_indices:
-#        node = copy_tree.get_leaf_node_by_token_index(index)
-#        clause_nodes.append(node)
-#
-#    for node in copy_tree.tree.traverse(strategy="levelorder"):
-#        node_leaves = node.get_leaves()
-#        if set(node_leaves) & set(clause_nodes) == set([]):
-#            node.detach()
-#    return copy_tree
+def get_arg2_clauses(doc, relation):
+    return [_arg_clauses(doc, relation, "Arg2")]
+
+def _arg_clauses(doc, relation, Arg):
+    Arg_sent_indices = sorted([item[3] for item in relation[Arg]["TokenList"]])
+    Arg_token_indices = sorted([item[4] for item in relation[Arg]["TokenList"]])
+
+    if len(set(Arg_sent_indices)) != 1:
+        return []
+    relation_ID = relation["ID"]
+    sent_index = Arg_sent_indices[0]
+
+    sent_tokens = [(index, doc["sentences"][sent_index]["words"][index][0]) for index in Arg_token_indices]
+
+    punctuation = "...,:;?!~--"
+    # first, use punctuation symbols to split the sentence
+    _clause_indices_list = []#[[(1,"I")..], ..]
+    temp = []
+    for index, word in sent_tokens:
+        if word not in punctuation:
+            temp.append((index, word))
+        else:
+            if temp != []:
+                _clause_indices_list.append(temp)
+                temp = []
+    if temp != []:
+        _clause_indices_list.append(temp)
+
+    clause_indices_list = []
+    for clause_indices in _clause_indices_list:
+        temp = util.list_strip_punctuation(clause_indices)
+        if temp != []:
+            clause_indices_list.append([item[0] for item in temp])
+
+    # then use SBAR tag in its parse tree to split each part into clauses.
+    parse_tree = doc["sentences"][sent_index]["parsetree"].strip()
+    syntax_tree = ETESyntax_tree(parse_tree)
+
+    if syntax_tree.tree == None:
+        return []
+
+    clause_list = []
+    for clause_indices in clause_indices_list:
+        clause_tree = _get_subtree(syntax_tree, clause_indices)
+        # BFS
+        flag = 0
+        for node in clause_tree.tree.traverse(strategy="levelorder"):
+            if node.name == "SBAR":
+                temp1 = [node.index for node in node.get_leaves()]
+                temp2 = sorted(list(set(clause_indices) - set(temp1)))
+
+                if temp2 == []:
+                    clause_list.append(temp1)
+                else:
+                    if temp1[0] < temp2 [0]:
+                        clause_list.append(temp1)
+                        clause_list.append(temp2)
+                    else:
+                        clause_list.append(temp2)
+                        clause_list.append(temp1)
+                flag = 1
+                break
+        if flag == 0:
+            clause_list.append(clause_indices)
+    clauses = []# [([1,2,3],yes), ([4, 5],no), ]
+    for clause_indices in clause_list:
+        clauses.append((clause_indices, ""))
+
+    return Arg_Clauses(relation_ID, Arg, sent_index, clauses)
+
+
+def _get_subtree(syntax_tree, clause_indices):
+    copy_tree = copy.deepcopy(syntax_tree)
+
+    for index, leaf in enumerate(copy_tree.tree.get_leaves()):
+        leaf.add_feature("index",index)
+
+    clause_nodes = []
+    for index in clause_indices:
+        node = copy_tree.get_leaf_node_by_token_index(index)
+        clause_nodes.append(node)
+
+    for node in copy_tree.tree.traverse(strategy="levelorder"):
+        node_leaves = node.get_leaves()
+        if set(node_leaves) & set(clause_nodes) == set([]):
+            node.detach()
+    return copy_tree
+
+
+def get_prev_curr_CP_production_rule(arg_clauses, clause_index, doc):
+    if clause_index == 0:
+        return ["%s|%s" % ("NULL", rule) for rule in get_curr_production_rule(arg_clauses, clause_index, doc)]
+
+    curr_production_rule = get_curr_production_rule(arg_clauses, clause_index, doc)
+    prev_production_rule = get_curr_production_rule(arg_clauses, clause_index - 1, doc)
+
+    CP_production_rule = []
+    for curr_rule in curr_production_rule:
+        for prev_rule in prev_production_rule:
+            CP_production_rule.append("%s|%s" % (prev_rule, curr_rule))
+
+    return CP_production_rule
+
+
+def get_curr_production_rule(arg_clauses, clause_index, doc):
+    sent_index = arg_clauses.sent_index
+    curr_clause_indices = arg_clauses.clauses[clause_index][0]# ([1,2,3],yes)
+
+    subtrees = []
+    parse_tree = doc["sentences"][sent_index]["parsetree"].strip()
+    syntax_tree = ETESyntax_tree(parse_tree)
+    if syntax_tree.tree != None:
+        clause_leaves = set([syntax_tree.get_leaf_node_by_token_index(index) for index in curr_clause_indices])
+        no_need = []
+        for node in syntax_tree.tree.traverse(strategy="levelorder"):
+            if node not in no_need:
+                if set(node.get_leaves()) <= clause_leaves:
+                    subtrees.append(node)
+                    no_need.extend(node.get_descendants())
+
+    production_rule = []
+    for tree in subtrees:
+        for node in tree.traverse(strategy="levelorder"):
+            if not node.is_leaf():
+                rule = node.name + "-->" + " ".join([child.name for child in node.get_children()])
+                production_rule.append(rule)
+
+    return production_rule
+
+
+def get_curr_last(arg_clauses, clause_index, doc):
+    sent_index = arg_clauses.sent_index
+    curr_clause = arg_clauses.clauses[clause_index]# ([1,2,3],yes)
+    curr_last_index = curr_clause[0][-1]
+    curr_last = doc["sentences"][sent_index]["words"][curr_last_index][0]
+
+    return curr_last
+
+
+def get_curr_lemma_verbs(arg_clauses, clause_index, doc):
+    sent_index = arg_clauses.sent_index
+    verb_pos = ["VB", "VBD", "VBG", "VBN", "VBP", "VBZ"]
+    curr_clause = arg_clauses.clauses[clause_index]# ([1,2,3],yes)
+
+    lmtzr = WordNetLemmatizer()
+    verbs = []
+    for index in curr_clause[0]:
+        word = doc["sentences"][sent_index]["words"][index][0]
+        pos = doc["sentences"][sent_index]["words"][index][1]["PartOfSpeech"]
+        if pos in verb_pos:
+            word = lmtzr.lemmatize(word, "v")
+            verbs.append(word)
+
+    return verbs
+
+
+def get_2prev_pos_lemma_verb(arg_clauses, clause_index, doc):
+    sent_index = arg_clauses.sent_index
+    verb_pos = ["VB", "VBD", "VBG", "VBN", "VBP", "VBZ"]
+    curr_clause_indices = arg_clauses.clauses[clause_index][0]# ([1,2,3],yes)
+
+    lmtzr = WordNetLemmatizer()
+    first_verb = ""
+    first_verb_index = 0
+    for index in curr_clause_indices:
+        word = doc["sentences"][sent_index]["words"][index][0]
+        pos = doc["sentences"][sent_index]["words"][index][1]["PartOfSpeech"]
+        if pos in verb_pos:
+            word = lmtzr.lemmatize(word)
+            first_verb = (word, index)
+            break
+        first_verb_index += 1
+    if first_verb == "":
+        return "NULL|NULL|NULL"
+    if first_verb_index == 0:
+        return "%s|%s|%s" % ("NULL", "NULL", first_verb[0])
+    if first_verb_index == 1:
+        prev1_pos = doc["sentences"][sent_index]["words"][first_verb[1] - 1][1]["PartOfSpeech"]
+        return "%s|%s|%s" % ("NULL", prev1_pos, first_verb[0])
+
+    prev1_pos = doc["sentences"][sent_index]["words"][first_verb[1] - 1][1]["PartOfSpeech"]
+    prev2_pos = doc["sentences"][sent_index]["words"][first_verb[1] - 2][1]["PartOfSpeech"]
+    return "%s|%s|%s" % (prev2_pos, prev1_pos, first_verb[0])
+
+
+def get_is_curr_NNP_prev_PRP_or_NNP(arg_clauses, clause_index, doc):
+    if clause_index == 0:
+        return "NONE"
+    sent_index = arg_clauses.sent_index
+
+    curr_clause_indices = arg_clauses.clauses[clause_index][0]# ([1,2,3],yes)
+    prev_clause_indices = arg_clauses.clauses[clause_index-1][0]
+
+    curr_poses = set([doc["sentences"][sent_index]["words"][index][1]["PartOfSpeech"]
+                    for index in curr_clause_indices])
+    prev_poses = set([doc["sentences"][sent_index]["words"][index][1]["PartOfSpeech"]
+                    for index in prev_clause_indices])
+    if set(["WHNP", "NNP"]) & curr_poses and set(["NNP", "PRP"]) & prev_poses != set([]):
+        return "yes"
+    else:
+        return "no"
