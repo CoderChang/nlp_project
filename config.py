@@ -1,5 +1,5 @@
-#CWD = '/home/slhome/cc001/Documents/nlp/nlp_project/'
-CWD = '/home/cc001/Documents/nlp_project/'
+CWD = '/home/slhome/cc001/Documents/nlp/nlp_project/'
+#CWD = '/home/cc001/Documents/nlp_project/'
 
 # directories:
 DATA_DIR = CWD + 'data/'
@@ -9,11 +9,8 @@ TEST_DIR = CWD + 'test_dataset/'
 MODEL_TRAINER_DIR = CWD + 'model_trainer/'
 DICT_DIR = CWD + 'dict/'
 
-TRAIN_OUT_EXAMPLE_DIR = CWD + 'train_output/feature/'
+TRAIN_OUT_EXAMPLE_DIR = CWD + 'train_output/examples/'
 TRAIN_OUT_MODEL_DIR = CWD + 'train_output/model/'
-
-TEST_OUT_FEATURE_OUT_DIR = CWD + 'test_output/feature_output/'
-TEST_OUT_MODEL_OUT_DIR = CWD + 'test_output/model_output/'
 
 DICT_CONN_DIR = DICT_DIR + 'connective/'
 DICT_ARG_POS_DIR = DICT_DIR + 'argument_position/'
@@ -37,6 +34,10 @@ TRAIN_EXAMPLES_NON_EXPLICIT_TEST_TEST = TRAIN_OUT_EXAMPLE_DIR + 'non_exp_example
 TRAIN_EXAMPLES_IMPLICIT_ARG1_TRAIN = TRAIN_OUT_EXAMPLE_DIR + 'implicit_arg1_examples_train.pickle'
 TRAIN_EXAMPLES_IMPLICIT_ARG1_TEST_TRAIN = TRAIN_OUT_EXAMPLE_DIR + 'implicit_arg1_examples_test_train.pickle'
 TRAIN_EXAMPLES_IMPLICIT_ARG1_TEST_TEST = TRAIN_OUT_EXAMPLE_DIR + 'implicit_arg1_examples_test_test.pickle'
+
+TRAIN_EXAMPLES_IMPLICIT_ARG2_TRAIN = TRAIN_OUT_EXAMPLE_DIR + 'implicit_arg2_examples_train.pickle'
+TRAIN_EXAMPLES_IMPLICIT_ARG2_TEST_TRAIN = TRAIN_OUT_EXAMPLE_DIR + 'implicit_arg2_examples_test_train.pickle'
+TRAIN_EXAMPLES_IMPLICIT_ARG2_TEST_TEST = TRAIN_OUT_EXAMPLE_DIR + 'implicit_arg2_examples_test_test.pickle'
 
 SORTED_EXP_CONN_PATH = DATA_DIR + 'sortedExpConn.txt'
 BROWN_CLUSTER_PATH = DATA_DIR + 'brown_cluster_3200.txt'

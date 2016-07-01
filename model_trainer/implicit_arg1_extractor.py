@@ -48,9 +48,9 @@ class Non_explicit_classifier(object):
             with open(pdtb_parses_file) as f2:
                 all_parse_dicts = json.loads(f2.read())
 
-            train_num = 1000
-            print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
-            data_json_list = data_json_list[:train_num]
+            #train_num = 1000
+            #print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
+            #data_json_list = data_json_list[:train_num]
 
             print 'generating train_examples...'
             print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -69,18 +69,13 @@ class Non_explicit_classifier(object):
                         for clause_index in range(len(arg_clauses.clauses)):
                             tmp_feature = self.extract_features(arg_clauses, clause_index, doc)
                             curr_clause_indices = arg_clauses.clauses[clause_index][0]
+                            if set(curr_clause_indices) <= set(true_arg_indices):
+                                train_examples.append((tmp_feature, 'yes'))
+                            else:
+                                train_examples.append((tmp_feature, 'no'))
 
-                    tmp_feature = self.extract_features(doc, relation)
-                    for tmp_sense in relation['Sense']:
-                        if tmp_sense in self.implicit_sense_list:
-                            train_examples.append((tmp_feature, tmp_sense))
-
-                    if relation['Type'] in Type_statistics :
-                        Type_statistics[relation['Type']] += 1
-                    else :
-                        Type_statistics[relation['Type']] = 1
-
-            util.write_examples_to_file(config.TRAIN_EXAMPLES_IMPLICIT_ARG1_TRAIN, train_examples)
+            if WRITE_EXAMPLE_FLAG:
+                util.write_examples_to_file(config.TRAIN_EXAMPLES_IMPLICIT_ARG1_TRAIN, train_examples)
 
             print 'train_examples generated, train classifier ...'
             print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -135,7 +130,7 @@ class Non_explicit_classifier(object):
         prev2_pos_lemma_verb = conn_util.get_2prev_pos_lemma_verb(arg_clauses, clause_index, doc)
 
         '''clause_word_num'''
-        clause_word_num = arg_clauses.clauses[clause_index][0]
+        clause_word_num = len(arg_clauses.clauses[clause_index][0])
 
         '''is_curr_NNP_prev_PRP_or_NNP'''
         is_curr_NNP_prev_PRP_or_NNP = conn_util.get_is_curr_NNP_prev_PRP_or_NNP(arg_clauses, clause_index, doc)
@@ -181,13 +176,23 @@ class Non_explicit_classifier(object):
 
                 if data_json['Type'] != 'Explicit':
                     relation = data_json
-                    tmp_feature = self.extract_features(doc, relation)
-                    for tmp_sense in relation['Sense']:
-                        test_train_examples.append((tmp_feature, tmp_sense))
-                        test_examples.append(tmp_feature)
+                    true_arg_indices = [token[4] for token in relation['Arg1']['TokenList']]
+                    for arg_clauses in conn_util.get_arg1_clauses(doc, relation):
+                        if arg_clauses == []:
+                            continue
+                        for clause_index in range(len(arg_clauses.clauses)):
+                            tmp_feature = self.extract_features(arg_clauses, clause_index, doc)
+                            curr_clause_indices = arg_clauses.clauses[clause_index][0]
+                            if set(curr_clause_indices) <= set(true_arg_indices):
+                                test_train_examples.append((tmp_feature, 'yes'))
+                                test_examples.append(tmp_feature)
+                            else:
+                                test_train_examples.append((tmp_feature, 'no'))
+                                test_examples.append(tmp_feature)
 
-            util.write_examples_to_file(config.TRAIN_EXAMPLES_IMPLICIT_ARG1_TEST_TEST, test_examples)
-            util.write_examples_to_file(config.TRAIN_EXAMPLES_IMPLICIT_ARG1_TEST_TRAIN, test_train_examples)
+            if WRITE_EXAMPLE_FLAG:
+                util.write_examples_to_file(config.TRAIN_EXAMPLES_IMPLICIT_ARG1_TEST_TEST, test_examples)
+                util.write_examples_to_file(config.TRAIN_EXAMPLES_IMPLICIT_ARG1_TEST_TRAIN, test_train_examples)
             print 'test_examples generated, test classifier ...'
             print time.strftime('%Y-%m-%d %H:%M:%S')
             print '------------------------------------------'
