@@ -48,9 +48,9 @@ class Implicit_arg1_extractor(object):
             with open(pdtb_parses_file) as f2:
                 all_parse_dicts = json.loads(f2.read())
 
-            #train_num = 1000
-            #print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
-            #data_json_list = data_json_list[:train_num]
+            train_num = 10000
+            print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
+            data_json_list = data_json_list[:train_num]
 
             print 'generating train_examples...'
             print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -83,12 +83,12 @@ class Implicit_arg1_extractor(object):
             print '------------------------------------------'
 
         # MaxentClassifier
-        #GIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[0]
-        #self.classifier = nltk.MaxentClassifier.train(train_examples, GIS_algorithm, trace=0, max_iter=1000)
+        GIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[0]
+        self.classifier = nltk.MaxentClassifier.train(train_examples, GIS_algorithm, trace=0, max_iter=1000)
         #IIS_algorithm = nltk.classify.MaxentClassifier.ALGORITHMS[1]
         #self.classifier = nltk.MaxentClassifier.train(train_examples, IIS_algorithm, trace=0, max_iter=1000)
         # NaiveBayesClassifier
-        self.classifier = nltk.classify.NaiveBayesClassifier.train(train_examples)
+        #self.classifier = nltk.classify.NaiveBayesClassifier.train(train_examples)
 
         print 'classifier completed ...'
         print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -96,19 +96,25 @@ class Implicit_arg1_extractor(object):
 
 
     # used for prediction
-    def extract_argument(self, doc, relation):
-        arg1_token_list = []
-        '''extract clauses'''
-        for arg_clauses in conn_util.get_arg1_clauses(doc, relation):
-            if arg_clauses == []:
-                continue
-            for clause_index in range(len(arg_clauses.clauses)):
-                tmp_feature = self.extract_features(arg_clauses, clause_index, doc)
-                result = self.classifier.classify(tmp_feature)
-                if result == 'yes':
-                    arg1_token_list.extend(arg_clauses.clauses[clause_index][0])
-        relation['Arg1']['TokenList'] = arg1_token_list
-        return relation
+    def extract_argument(self, doc, non_explicit_relations):
+        for relation in non_explicit_relations:
+            sent_index = relation['Arg1']['TokenList'][0][3]
+            arg1_token_list = []
+            '''extract clauses'''
+            for arg_clauses in conn_util.get_arg1_clauses(doc, relation):
+                if arg_clauses == []:
+                    continue
+                for clause_index in range(len(arg_clauses.clauses)):
+                    tmp_feature = self.extract_features(arg_clauses, clause_index, doc)
+                    result = self.classifier.classify(tmp_feature)
+                    if result == 'yes':
+                        arg1_token_list.extend(conn_util.get_doc_offset(doc, sent_index, arg_clauses.clauses[clause_index][0]))
+            if arg1_token_list == []:
+                arg1_token_list = [item[2] for item in relation["Arg1"]["TokenList"]]
+            else:
+                arg1_token_list = range(min(arg1_token_list), max(arg1_token_list)+1)
+            relation['Arg1']['TokenList'] = arg1_token_list
+        return non_explicit_relations
 
     def extract_features(self, arg_clauses, clause_index, doc):
         feat_dict_prev_curr_CP_production_rule = {}

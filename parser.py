@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 import config
 import utils.conn_util as conn_util
 from model_trainer.connective_classifier import Connective_classifier
@@ -11,6 +12,8 @@ from model_trainer.implicit_arg2_extractor import Implicit_arg2_extractor
 class DiscourseParser(object):
 
     def __init__(self):
+        print '-------------- Loading models ----------------------------'
+        print time.strftime('%Y-%m-%d %H:%M:%S')
         print "==> Loading Connective classifier"
         self.conn_classifier = Connective_classifier()
         self.conn_classifier.load_model_from_file(config.TRAIN_MODEL_CONN_CL)
@@ -26,7 +29,8 @@ class DiscourseParser(object):
         print "==> Loading Non-Explicit classifier"
         self.non_exp_classifier = Non_explicit_classifier()
         self.non_exp_classifier.load_model_from_file(config.TRAIN_MODEL_NON_EXPLICIT_CL)
-        print "------------- All models loaded -------------"
+        print time.strftime('%Y-%m-%d %H:%M:%S')
+        print "-------------- All models loaded -------------------------"
 
     def parse_file(self, input_file):
         documents = json.loads(open(input_file).read())
@@ -51,16 +55,16 @@ class DiscourseParser(object):
         # fake non_explicit relation object list by adjacent_non_exp_list, no sense.
         non_explicit_relations = conn_util.fake_non_explicit_relations(doc_id, doc, adjacent_non_exp_list)
 
+        """Non-Explicit classifier"""
+        non_explicit_relations = self.non_exp_classifier.get_non_explicit_relations(doc, non_explicit_relations)
+        #EntRel_relations, Implicit_AltLex_relations = conn_util.divide_non_explicit_relations(non_explicit_relations, doc)
+        #EntRel_relations, Implicit_AltLex_relations = conn_util.fake_divide_non_explicit_relations(non_explicit_relations, doc)
+
         """Implicit arg1 extractor"""
         non_explicit_relations = self.implicit_arg1_extractor.extract_argument(doc, non_explicit_relations)
 
         """Implicit arg2 extractor"""
         non_explicit_relations = self.implicit_arg2_extractor.extract_argument(doc, non_explicit_relations)
-
-        """Non-Explicit classifier"""
-        non_explicit_relations = self.non_exp_classifier.get_non_explicit_relations(doc, non_explicit_relations)
-        #EntRel_relations, Implicit_AltLex_relations = conn_util.divide_non_explicit_relations(non_explicit_relations, doc)
-        #EntRel_relations, Implicit_AltLex_relations = conn_util.fake_divide_non_explicit_relations(non_explicit_relations, doc)
 
         #output = EntRel_relations + Implicit_AltLex_relations
         output = non_explicit_relations

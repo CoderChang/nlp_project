@@ -103,19 +103,25 @@ class Implicit_arg2_extractor(object):
 
 
     # used for prediction
-    def extract_argument(self, doc, relation):
-        arg2_token_list = []
-        '''extract clauses'''
-        for arg_clauses in conn_util.get_arg2_clauses(doc, relation):
-            if arg_clauses == []:
-                continue
-            for clause_index in range(len(arg_clauses.clauses)):
-                tmp_feature = self.extract_features(arg_clauses, clause_index, doc)
-                result = self.classifier.classify(tmp_feature)
-                if result == 'yes':
-                    arg2_token_list.extend(arg_clauses.clauses[clause_index][0])
-        relation['Arg2']['TokenList'] = arg2_token_list
-        return relation
+    def extract_argument(self, doc, non_explicit_relations):
+        for relation in non_explicit_relations:
+            sent_index = relation['Arg2']['TokenList'][0][3]
+            arg2_token_list = []
+            '''extract clauses'''
+            for arg_clauses in conn_util.get_arg2_clauses(doc, relation):
+                if arg_clauses == []:
+                    continue
+                for clause_index in range(len(arg_clauses.clauses)):
+                    tmp_feature = self.extract_features(arg_clauses, clause_index, doc)
+                    result = self.classifier.classify(tmp_feature)
+                    if result == 'yes':
+                        arg2_token_list.extend(conn_util.get_doc_offset(doc, sent_index, arg_clauses.clauses[clause_index][0]))
+            if arg2_token_list == []:
+                arg2_token_list = [item[2] for item in relation["Arg2"]["TokenList"]]
+            else:
+                arg2_token_list = range(min(arg2_token_list), max(arg2_token_list)+1)
+            relation['Arg2']['TokenList'] = arg2_token_list
+        return non_explicit_relations
 
     def extract_features(self, arg_clauses, clause_index, doc):
         feat_dict_prev_curr_CP_production_rule = {}
