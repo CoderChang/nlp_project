@@ -48,9 +48,9 @@ class Implicit_arg1_extractor(object):
             with open(pdtb_parses_file) as f2:
                 all_parse_dicts = json.loads(f2.read())
 
-            train_num = 10000
-            print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
-            data_json_list = data_json_list[:train_num]
+            #train_num = 10000
+            #print 'length of data_json_list: ', len(data_json_list), 'train_num: ', train_num
+            #data_json_list = data_json_list[:train_num]
 
             print 'generating train_examples...'
             print time.strftime('%Y-%m-%d %H:%M:%S')
@@ -109,10 +109,13 @@ class Implicit_arg1_extractor(object):
                     result = self.classifier.classify(tmp_feature)
                     if result == 'yes':
                         arg1_token_list.extend(conn_util.get_doc_offset(doc, sent_index, arg_clauses.clauses[clause_index][0]))
+                        #arg1_token_list.extend(arg_clauses.clauses[clause_index][0])
             if arg1_token_list == []:
                 arg1_token_list = [item[2] for item in relation["Arg1"]["TokenList"]]
+                #arg1_token_list = relation['Arg1']['TokenList']
             else:
                 arg1_token_list = range(min(arg1_token_list), max(arg1_token_list)+1)
+                #arg1_token_list = [ [-1, -1, -1, sent_index, ind] for ind in range(min(arg1_token_list), max(arg1_token_list)+1)]
             relation['Arg1']['TokenList'] = arg1_token_list
         return non_explicit_relations
 
